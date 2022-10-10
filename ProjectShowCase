@@ -1,0 +1,269 @@
+import {Component} from 'react'
+import Loader from 'react-loader-spinner'
+import ProjectItemDisplay from '../ProjectItemDisplay'
+import './index.css'
+
+const categoriesList = [
+  {id: 'ALL', displayText: 'All'},
+  {id: 'STATIC', displayText: 'Static'},
+  {id: 'RESPONSIVE', displayText: 'Responsive'},
+  {id: 'DYNAMIC', displayText: 'Dynamic'},
+  {id: 'REACT', displayText: 'React'},
+]
+
+const apiStatusConstants = {
+  initial: 'INITIAL',
+  success: 'SUCCESS',
+  failure: 'FAILURE',
+  inProgress: 'IN_PROGRESS',
+}
+
+class ProjectShowCase extends Component {
+  state = {
+    activeCategoryItem: categoriesList[0].id,
+    apiStatus: apiStatusConstants.initial,
+    projectsList: [],
+  }
+
+  componentDidMount() {
+    this.getAllTheProjectsListData()
+  }
+
+  getAllTheProjectsListData = async () => {
+    this.setState({apiStatus: apiStatusConstants.inProgress})
+    const {activeCategoryItem} = this.state
+    const projectsApiUrl = `https://apis.ccbp.in/ps/projects?category=${activeCategoryItem}`
+    console.log(projectsApiUrl)
+
+    const options = {
+      method: 'GET',
+    }
+    const response = await fetch(projectsApiUrl, options)
+    if (response.ok) {
+      const data = await response.json()
+      console.log(data)
+      const updatedData = data.projects.map(eachProject => ({
+        id: eachProject.id,
+        imageUrl: eachProject.image_url,
+        name: eachProject.name,
+      }))
+      this.setState({
+        projectsList: updatedData,
+        apiStatus: apiStatusConstants.success,
+      })
+    } else {
+      this.setState({apiStatus: apiStatusConstants.failure})
+    }
+  }
+
+  clickToRetryPage = () => {
+    this.getAllTheProjectsListData()
+  }
+
+  onChangeCategory = event => {
+    this.setState(
+      {activeCategoryItem: event.target.value},
+      this.getAllTheProjectsListData,
+    )
+  }
+
+  renderLoaderPage = () => (
+    <div className="loader-container">
+      <Loader type="ThreeDots" color="#328af2" height="50" width="50" />
+    </div>
+  )
+
+  renderProjects = () => {
+    const {projectsList} = this.state
+
+    return (
+      <ul className="projects-list">
+        {projectsList.map(eachProject => (
+          <ProjectItemDisplay
+            key={eachProject.id}
+            projectItemData={eachProject}
+          />
+        ))}
+      </ul>
+    )
+  }
+
+  renderFailurePage = () => (
+    <div className="failure-section">
+      <img
+        alt="failure view"
+        className="failure-img"
+        src="https://assets.ccbp.in/frontend/react-js/projects-showcase/failure-img.png"
+      />
+      <h1 className="heading">Oops! Something Went Wrong</h1>
+      <p className="description">
+        We cannot seem to find the page you are looking for.
+      </p>
+      <button
+        type="button"
+        className="retry-btn"
+        onClick={this.clickToRetryPage}
+      >
+        Retry
+      </button>
+    </div>
+  )
+
+  renderProjectDisplayData = () => {
+    const {apiStatus} = this.state
+    switch (apiStatus) {
+      case apiStatusConstants.success:
+        return this.renderProjects()
+      case apiStatusConstants.failure:
+        return this.renderFailurePage()
+      case apiStatusConstants.inProgress:
+        return this.renderLoaderPage()
+      default:
+        return null
+    }
+  }
+
+  render() {
+    const {activeCategoryItem} = this.state
+    return (
+      <div className="app-container">
+        <nav className="navbar">
+          <img
+            src="https://assets.ccbp.in/frontend/react-js/projects-showcase/website-logo-img.png"
+            alt="website logo"
+            className="logo-img"
+          />
+        </nav>
+        <div className="project-items-container">
+          <select
+            value={activeCategoryItem}
+            onChange={this.onChangeCategory}
+            className="select-block"
+          >
+            {categoriesList.map(eachCategory => (
+              <option
+                className="options"
+                key={eachCategory.id}
+                value={eachCategory.id}
+              >
+                {eachCategory.displayText}
+              </option>
+            ))}
+          </select>
+
+          {this.renderProjectDisplayData()}
+        </div>
+      </div>
+    )
+  }
+}
+export default ProjectShowCase
+
+
+
+
+
+
+
+
+
+......index.css........
+.app-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+}
+
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  background-color: #f1f5f9;
+  height: 110px;
+  width: 100%;
+  padding-left: 230px;
+}
+.logo-img {
+  height: 80px;
+  width: 240px;
+}
+
+.project-items-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 80%;
+  max-width: 1300px;
+  margin-top: 50px;
+}
+
+.select-block {
+  width: 450px;
+  height: 50px;
+  border-radius: 8px;
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  padding-left: 15px;
+  font-size: 16px;
+  color: #475569;
+  font-family: 'Roboto';
+  font-size: 16px;
+  font-weight: 500;
+  align-self: flex-start;
+}
+.options {
+  color: #475569;
+  font-family: 'Roboto';
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.projects-list {
+  display: flex;
+  flex-wrap: wrap;
+  width: 100%;
+  margin-top: 60px;
+  padding-left: 0px;
+}
+
+.failure-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}
+
+.failure-img {
+  height: 500px;
+  width: 900px;
+  margin-bottom: 20px;
+}
+
+.heading {
+  color: #475569;
+  font-family: 'Roboto';
+  font-size: 48px;
+  font-weight: 500;
+}
+.description {
+  color: #475569;
+  font-family: 'Roboto';
+  font-size: 17px;
+  font-weight: 500;
+}
+
+.retry-btn {
+  background-color: #328af2;
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 500;
+  font-family: 'Roboto';
+  border: none;
+  outline: none;
+  border-radius: 5px;
+  width: 150px;
+  height: 50px;
+  cursor: pointer;
+}
