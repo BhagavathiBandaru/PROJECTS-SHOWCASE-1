@@ -1,0 +1,45 @@
+import './index.css'
+
+const ProjectItemDisplay = props => {
+  const {projectItemData} = props
+  const {name, imageUrl} = projectItemData
+
+  return (
+    <li className="project-block">
+      <img src={imageUrl} alt={name} className="project-img" />
+      <p className="name">{name}</p>
+    </li>
+  )
+}
+
+export default ProjectItemDisplay
+
+
+.project-block {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  background-color: #ffffff;
+  list-style-type: none;
+  margin-right: 20px;
+  margin-bottom: 20px;
+  width: 300px;
+  height: 300px;
+  border-radius: 8px;
+  box-shadow: 0px;
+}
+
+.project-img {
+  height: 240px;
+  width: 100%;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+}
+
+.name {
+  color: #475569;
+  font-family: 'Roboto';
+  font-size: 16px;
+  font-weight: 500;
+  padding-left: 20px;
+}
